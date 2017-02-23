@@ -1,0 +1,53 @@
+= script_detector
+
+This is a simple utility library for Ruby 1.9+ for trying to figure out which CJK script a string is in.  Five boolean methods that extend String are provided:
+
+japanese?:: Returns true if the string contains specifically Japanese (hiragana or katakana) characters
+korean?:: Returns true if the string contains specifically Korean (hangul) characters
+chinese?:: Returns true if the string contains Chinese characters _and_ no Japanese or Korean characters
+traditional_chinese?:: Return true if the string contains traditional Chinese characters (繁體字)
+simplified_chinese?:: Return true if the string contains simplified Chinese characters (简体字)
+
+There is also a helper method that combines these to produce human-readable output:
+
+identify_script:: Try to detect script and return one of "Japanese", "Korean", "Traditional Chinese", "Simplified Chinese", "Ambiguous Chinese" or "Unknown"
+
+It is important to understand that this *requires* long sections of text to work reliably, since a single character or even several characters may be valid Japanese, traditional Chinese and simplified Chinese simultaneously.  (See the {Unicode CJK FAQ}[http://unicode.org/faq/han_cjk.html#4] for a longer explanation.)  Attempting to use this library on short strings may produce misleading results: for example, the string  東京 (Tōkyō) will return "false" for Japanese and "true" for Chinese, since those two _kanji_ are also valid traditional Chinese.  Likewise, the string 你好 (nǐ hǎo) will return "false" for both simplified and traditional Chinese, since neither character is identifiably simplified nor traditional.
+
+== Example
+
+  > p string
+  => "我的氣墊船充滿了鱔魚."
+  > string.chinese?
+  => true
+  > string.traditional_chinese?
+  => true
+  > string.simplified_chinese?
+  => false
+  > string.japanese?
+  => false
+  > string.korean?
+  => false
+  > string.identify_script
+  => "Traditional Chinese"
+
+== Implementation
+
+Ruby 1.9 {Oniguruma regular expressions}[http://www.geocities.jp/kosako3/oniguruma/doc/RE.txt] are used to determine which CJK script is in use.  The lists of simplified and traditional Chinese characters have been drawn from the {Unihan database}[http://www.unicode.org/reports/tr38/]'s +Unihan_Variants.txt+ data set ({download}[http://unicode.org/Public/UNIDATA/Unihan.zip]), using the assumption that any character with a +kTraditionalVariant+ is simplified and visa versa.
+
+For simplicity and speed, only characters in the Basic Multilingual Plane (U+0000-FFFF) are included in the tests, but this is unlikely to be a problem in practice since even documents using the excluded characters in Plane 2 (U+20000-2FFFF) will mix in characters from BMP.
+
+== Contributing to script_detector
+
+* Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
+* Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.
+* Fork the project.
+* Start a feature/bugfix branch.
+* Commit and push until you are happy with your contribution.
+* Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
+* Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
+
+== Copyright
+
+Copyright (c) 2012 Jani Patokallio, Lonely Planet Publications. See LICENSE.txt for further details.
+
